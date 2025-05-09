@@ -20,7 +20,6 @@ class BookController extends Controller
    
     public function store(StoreBookRequest $request)
     {
-        // dd($request->all(), $request->user);
 
         $book = Book::create([
             'title' => $request->input('title'),
@@ -32,44 +31,10 @@ class BookController extends Controller
             'user_id'=>request()->user->id,
         ]);
 
-        // dd($book);
 
         return response()->json(['data' => $book], 201);
     }
     
-
-
-//ПРОВЕРИТЬ РАБОТОСПОСОБНОСТЬ СТОРА
-
-    // public function book(Request $request){
-    //     // dd($request->user);
-
-    //     $validated = $request->validate([
-    //         'title' => 'required|string|max:75',
-    //         'author' => 'required|string|max:50',
-    //         'description' => 'required|string',
-    //         'is_public' => 'required|boolean',
-    //         'file' => 'required|file|mimes:pdf,epub|max:10000',
-    //     ]);
-
-    //     // dd($validated['title']);
-     
-    //     $book = Book::create([
-    //         'title' => $validated['title'],
-    //         'author' => $validated['author'],
-    //         'description' => $validated['description'],
-    //         'is_public' => $validated['is_public'],
-    //         'file'=>$validated['file']->store('books', 'public'),
-    //         'user_id' => $request->user->id,
-    //     ]);
-
-    //     // dd($book);
-
-    //     return response()->json(['data' => $book], 201);
-    // }
-
-
-
     
     public function show(string $id)
     {
