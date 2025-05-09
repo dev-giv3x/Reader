@@ -11,11 +11,39 @@ use Illuminate\Http\JsonResponse;
 class BookController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
-        $books = Book::where('is_public', true)->get();
-        return response()->json(['data' => $books], 200);
-    }
+        //просмотр всех книг кроме приватных
+        // $books = Book::where('is_public', true)->get();
+        // return response()->json(['data' => $books], 200);
+
+        //просмотр всех книг с учетом админки (админ видит абсолютно все книги, даже приватные) для этого прописан отдельный мидлвеир OptionalAuth
+        //     if ($user && $user->is_admin) {
+            //         $books = Book::all();
+            
+            //     } else {
+                
+            //          $books = Book::where('is_public', true)->get();
+            //  }
+            
+        //просмотр всех книг с учетом админки и авг рейтинга
+        $user = $request->user;
+        $booksQuery = $user && $user->is_admin
+            ? Book::query() 
+            : Book::where('is_public', true); 
+
+        $books = $booksQuery->get();
+
+        $books = $books->map(function ($book) {
+        $avg = $book->averageRating();
+            return array_merge(
+        $book->toArray(),
+            ['average_rating' => $avg !== null ? rtrim(rtrim(number_format($avg, 2, '.', ''), '0'), '.') : null]
+);
+});
+
+    return response()->json(['data' => $books], 200);
+}
 
    
     public function store(StoreBookRequest $request)
@@ -35,7 +63,7 @@ class BookController extends Controller
         return response()->json(['data' => $book], 201);
     }
     
-    
+
     public function show(string $id)
     {
         $book = Book::with(['comments.user', 'ratings.user'])->find($id);
@@ -96,21 +124,24 @@ class BookController extends Controller
    
     public function search(SearchBookRequest $request): JsonResponse
     {
-    $query = $request->get('query');
 
-    $books = Book::where(function ($q) use ($query) {
-        $q->where('title', 'like', "%$query%")
-          ->orWhere('author', 'like', "%$query%");
-    })
-    ->where(function ($q) {
-        $user = request()->user();
-        $q->where('is_public', true);
-        if ($user) {
-            $q->orWhere('user_id', $user->id);
-        }
-    })
-    ->get();
+        $query = $request->get('query');
 
+        $books = Book::where(function ($q) use ($query) {
+            $q->where('title', 'like', "%$query%")
+              ->orWhere('author', 'like', "%$query%");
+        })
+        ->where(function ($q) {
+            $user = request()->user;  
+        
+            $q->where('is_public', true); 
+        
+            if ($user) {
+                $q->orWhere('user_id', $user->id); 
+            }
+        })
+        ->get();
+        
     return response()->json(['data' => $books], 200);
     }
 
@@ -121,8 +152,19 @@ class BookController extends Controller
     }
 
   
-    public function destroy(string $id)
+    public function destroy(Request $request, $id)
     {
-        //
+        if ($request->user->is_admin) {
+            $book = Book::find($id);
+    
+            if (!$book) {
+                return response()->json(['message' => 'Book not found!'], 404);
+            }
+    
+            $book->delete();
+            return response()->json(['message' => 'Book deleted successfully!!'], 200);
+        }
+    
+        return response()->json(['message' => 'Forbidden for you!!!'], 403);
     }
 }

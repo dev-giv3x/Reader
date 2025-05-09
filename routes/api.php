@@ -35,11 +35,12 @@ Route::middleware('auth.local')->group(function () {
     Route::delete('/books/{id}/status', [StatusController::class, 'destroy']);
     Route::get('/statuses/{status}', [StatusController::class, 'index']);
     Route::get('/books/{id}/comments', [CommentController::class, 'index']);
+    Route::delete('/books/{id}', [BookController::class, 'destroy']);
 });
 
-Route::get('/books/search',[BookController::class, 'search']);
+Route::get('/books/search',[BookController::class, 'search'])->middleware('auth.optional'::class);
 Route::get('/books/{id}', [BookController::class, 'show']);
-Route::get('/books', [BookController::class, 'index']);
+Route::get('/books', [BookController::class, 'index'])->middleware('auth.optional'::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 

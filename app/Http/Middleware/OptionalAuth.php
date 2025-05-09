@@ -9,20 +9,18 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 
-class Auth
+class OptionalAuth
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $token = $request->bearerToken();
 
-        $user = User::where('remember_token', $request->bearerToken())->first();
-
-    //  dd($user);
-
-        throw_if(!$user, new ApiException(403, 'Forbidden for you!!'));
-
-        $request->user = $user;
-
-        // dd($request->user);
+        if ($token) {
+            $user = User::where('remember_token', $token)->first();
+            if ($user) {
+                $request->user = $user;
+            }
+        }
 
         return $next($request);
     }

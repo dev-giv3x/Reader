@@ -15,7 +15,7 @@ class CommentController extends Controller
         $book = Book::findOrFail($id);
 
     if (!$book->is_public && $book->user_id !== request()->user->id) {
-        return response()->json(['error' => 'Forbidden'], 403);
+        return response()->json(['error' => 'Forbidden for you!!!'], 403);
     }
 
     return response()->json(['data' => $book->comments()->with('user')->get()]);
@@ -28,7 +28,7 @@ class CommentController extends Controller
         $book = Book::findOrFail($id);
     
         if (!$book->is_public && $book->user_id !== request()->user->id) {
-            return response()->json(['error' => 'Forbidden'], 403);
+            return response()->json(['error' => 'Forbidden for you!!'], 403);
         }
     
         $comment = $book->comments()->create([
