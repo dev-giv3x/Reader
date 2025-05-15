@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Exceptions;
 
-use Exception;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -12,9 +10,9 @@ class ApiException extends HttpResponseException
     {
         $data = [
             'error' => [
-                'code' => $code,
+                'code'    => $code,
                 'message' => $message,
-            ]
+            ],
         ];
 
         if (count($errors) > 0) {
