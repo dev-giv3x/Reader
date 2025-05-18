@@ -5,57 +5,49 @@ use App\Http\Requests\StoreCommentRequest;
 use App\Models\Book;
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use App\Http\Services\CommentService;
 
 class CommentController extends Controller
 {
+    public function __construct(private CommentService $commentService)
+    {}
 
-    public function index(string $id)
+    public function index(string $bookId, Request $request)
     {
-        $book = Book::findOrFail($id);
+        $user = $request->user;
 
-        if (! $book->is_public && $book->user_id !== request()->user->id) {
-            return response()->json(['error' => 'Forbidden for you!!!'], 403);
+        $comments = $this->commentService->index($bookId, $user);
+
+        if ($comments === null) {
+            return response(['error' => 'Book not found or access denied.'], 403);
         }
 
-        return response()->json(['data' => $book->comments()->with('user')->get()]);
+        return ['data' => $comments];
     }
 
-    public function store(string $id, StoreCommentRequest $request)
+    public function store(string $bookId, StoreCommentRequest $request)
     {
+         $user = request()->user;
 
-        $book = Book::findOrFail($id);
+        $comment = $this->commentService->store($bookId, $request->validated(), $user);
 
-        if (! $book->is_public && $book->user_id !== request()->user->id) {
-            return response()->json(['error' => 'Forbidden for you!!'], 403);
+        if ($comment === null) {
+            return response(['error' => 'Book not found or access denied.'], 403);
         }
 
-        $comment = $book->comments()->create([
-            'content' => $request->input('content'),
-            'user_id' => request()->user->id,
-        ]);
-
-        return response()->json(['data' => $comment], 201);
+        return response(['data' => $comment], 201);
     }
 
-    public function show(string $id)
+    public function destroy(Comment $comment, Request $request)
     {
-        //
-    }
+        $user = $request->user;
 
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        $deleted = $this->commentService->destroy($comment, $user);
 
-    public function destroy(Comment $comment)
-    {
-        if ($comment->user_id !== request()->user?->id) {
-            return response()->json(['error' => 'You are not authorized to delete this comment.'], 403);
+        if ($deleted === null) {
+            return response(['error' => 'You are not authorized to delete this comment.'], 403);
         }
 
-        $comment->delete();
-
-        return response()->json(['message' => 'Comment deleted successfully.'], 200);
+        return ['message' => 'Comment deleted successfully.'];
     }
-
 }

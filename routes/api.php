@@ -39,7 +39,7 @@ Route::middleware('auth.local')->group(function () {
 });
 
 Route::get('/books/search',[BookController::class, 'search'])->middleware('auth.optional'::class);
-Route::get('/books/{id}', [BookController::class, 'show']);
+Route::get('/books/{id}', [BookController::class, 'show'])->middleware('auth.optional'::class);
 Route::get('/books', [BookController::class, 'index'])->middleware('auth.optional'::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

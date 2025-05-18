@@ -9,11 +9,6 @@ use Illuminate\Http\Request;
 class RatingController extends Controller
 {
 
-    public function index()
-    {
-        //
-    }
-
     public function store(StoreRatingRequest $request, string $id)
     {
         $book = Book::findOrFail($id);
@@ -28,16 +23,6 @@ class RatingController extends Controller
         );
 
         return response()->json(['data' => $rating], 201);
-    }
-
-    public function show(string $id)
-    {
-        //
-    }
-
-    public function update(Request $request, string $id)
-    {
-        //
     }
 
     public function destroy(Rating $rating)

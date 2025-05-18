@@ -11,10 +11,15 @@ class Auth
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $token = $request->bearerToken();
+
+        if (! $token) {
+            throw new ApiException(403, 'Forbidden: token missing');
+        }
 
         $user = User::where('remember_token', $request->bearerToken())->first();
 
-        //  dd($user);
+        // dd($user);
 
         throw_if(! $user, new ApiException(403, 'Forbidden for you!!'));
 
