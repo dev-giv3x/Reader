@@ -32,12 +32,17 @@ class CommentService
         ]);
     }
 
-    public function destroy(Comment $comment, ?User $user): ?bool
-    {
-        if ($comment->user_id !== $user?->id) {
-            return null;
-        }
-
-        return $comment->delete();
+   
+    public function destroy(Comment $comment, ?User $user)
+{
+    if (!$user) {
+        return null;
     }
+
+    if ($comment->user_id !== $user->id && !$user->is_admin) {
+        return null;
+    }
+
+    return $comment->delete();
+}
 }
